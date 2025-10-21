@@ -1,8 +1,8 @@
-fire
-numpy
-py3dmol
-pytorch_lightning
-PyYAML
-rdkit-pypi
-streamlit
-torch
+fire==0.7.1
+numpy==2.3.4
+py3dmol==2.5.3
+pytorch_lightning==2.5.5
+PyYAML==6.0.3
+rdkit==2024.9.1
+streamlit==1.50.0
+torch==2.5.0
