@@ -1,0 +1,87 @@
+
+
+watermark_emb: !SUB ${watermark_emb:-16}
+
+#data
+dataset: 
+  name: "qm9"
+  datadir: !ENV "./dataset/qm9"
+  num_workers: 2
+  n_atom_types: &_n_atom_types 5
+  atom_decoder: ['H', 'C', 'N', 'O', 'F']
+  atomic_nb: [1, 6, 7, 8, 9]
+  n_node_histogram: [0, 0, 0, 1, 4, 5, 9, 16, 49, 124, 362, 807, 1689, 3060, 
+                      5136, 7796, 10644, 13025, 13364, 13832, 9482, 9970, 3393, 
+                      4848, 539, 1506, 48, 266, 0, 25]
+  remove_h: False
+  normalizer_dict: 
+    pos: 2.0
+    one_hot: 1.0
+    charges: 9.0
+  colors_dic: ['#FFFFFF99', 'C7', 'C0', 'C3', 'C1']
+  radius_dic: [0.46, 0.77, 0.77, 0.77, 0.77]
+
+optimization:
+  optimizer: "AdamW"
+  batch_size: &_bsize !SUB ${batch_size:-64}
+
+# WatermarkModel
+encoder_decoder:
+  node_embed_size: &_nodesize 64
+  edge_embed_size: &_edgesize 64
+  block_height: 16
+  block_width: 16
+  expand_size: 128
+  watermark_emb: !SUB "${watermark_emb}"
+  rank: 16
+  symmetric: false
+  node_features:
+    c_s: *_nodesize
+    c_pos_emb: 64
+    c_timestep_emb: 64
+    embed_diffuse_mask: false
+    max_num_res: 2000
+    timestep_int: 1000
+    aatype_pred_num_tokens: 21
+    embed_aatype: true
+    embed_moltype: true
+    embed_chain: false
+    embed_watermark: true
+    embed_position: true
+    watermark_emb: !SUB "${watermark_emb}"
+  edge_features:
+    single_bias_transition_n: 2
+    c_s: *_nodesize
+    c_p: *_edgesize
+    relpos_k: 64
+    use_rbf: true
+    num_rbf: 32
+    feat_dim: 64
+    num_bins: 22
+    self_condition: true
+  ipa:
+    c_s: *_nodesize
+    c_z: *_edgesize
+    c_hidden: 128
+    no_heads: 8
+    no_qk_points: 8
+    no_v_points: 12
+    seq_tfmr_num_heads: 4
+    seq_tfmr_num_layers: 2
+    num_blocks: 6
+  training:
+    min_plddt_mask: null
+    loss: se3_vf_loss
+    bb_atom_scale: 0.1
+    trans_scale: 0.1
+    translation_loss_weight: 2.0
+    t_normalize_clip: 0.9
+    rotation_loss_weights: 1.0
+    aux_loss_weight: 1.0
+    aux_loss_t_pass: 0.25
+
+
+
+
+
+

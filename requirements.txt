@@ -1,0 +1,8 @@
+fire
+numpy
+py3dmol
+pytorch_lightning
+PyYAML
+rdkit-pypi
+streamlit
+torch
