@@ -6,3 +6,4 @@ PyYAML==6.0.3
 rdkit==2024.9.1
 streamlit==1.50.0
 torch==2.5.0
+torch_geometric
