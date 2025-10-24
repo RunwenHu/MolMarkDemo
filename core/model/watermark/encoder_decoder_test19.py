@@ -85,7 +85,21 @@ class WaterMarkModule(nn.Module):
         
         return recovery, pred_pos_enc, predicted_classes
 
-        
+    def embed_watermark(self, position, charges, atom_types, edge_index, watermark):
+        pred_pos_enc = self.encoder(position, watermark, charges, atom_types, edge_index)
+        return pred_pos_enc
+    
+    def extract_watermark(self, position, charges, atom_types, edge_index):
+
+        pred_pos = position.reshape(self.batch_size, -1, position.shape[-1])
+        distance_matrix = torch.cdist(pred_pos, pred_pos, p=2)
+        recovered_coords = self.recover_coordinates(distance_matrix)
+        recovered_coords = recovered_coords.reshape(-1, recovered_coords.shape[-1])
+        pred_code = self.decoder(recovered_coords, charges, atom_types, edge_index)
+        predicted_classes = (pred_code > 0.5).float()       
+
+        return predicted_classes
+      
     def loss_one_step(self, position, charges, atom_types, edge_index, watermark):
     
         recovery, pred_pos, pred_code = self(position, charges, atom_types, edge_index, watermark, attack=True)  
@@ -93,6 +107,8 @@ class WaterMarkModule(nn.Module):
         code_loss = self.fn(pred_code, watermark)
 
         return post_loss, code_loss, recovery, pred_pos, pred_code
+    
+    
 
         
 
