@@ -152,7 +152,7 @@ def preprocess_data(elements, coords, edge_index, batch_size=64, device=torch.de
     return elements, coords, edge_index
 
 
-def generate_molecule(mol_path, num_atoms=12, batch_size=64, device=torch.device("cpu")):
+def generate_molecule(mol_path, num_atoms=12):
     
     with open(mol_path,'rb') as f:
         mols = pickle.load(f)
@@ -340,17 +340,158 @@ parameters_root ={
 # -------------------------
 # Streamlit 页面
 # -------------------------
-st.title("Demo of MolMark")
+def setup_app_style():
+    """全局页面样式与Sidebar布局设置（带参数重置功能）"""
 
-# 侧边栏参数
-st.sidebar.header("Parameters Setting")
-num_molecules = st.sidebar.slider("Molecule Numbers", 1, 64, 3, 1)
-num_atoms = st.sidebar.slider("Atom Numbers", 10, 27, 20, 1)
-sphere_radius = st.sidebar.slider("Atom Radius", 0.1, 1.0, 0.3, 0.05)
-stick_radius = st.sidebar.slider("Bond Radius", 0.05, 0.5, 0.15, 0.05)
-watermark_input = st.sidebar.text_input("Watermark (Text or Binary)","10101010")
-max_bits = st.sidebar.slider("Maximum bits", 4, 16, 8, 2)
-st.sidebar.header("Watermark Operations")
+    # ===== 🎨 全局 CSS 样式 =====
+    st.markdown("""
+    <style>
+    .main { background-color: #f9fafc; }
+    h1 {
+        background: linear-gradient(90deg, #0072ff, #8000ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 48px !important;
+        font-weight: 800 !important;
+        text-align: center;
+        margin-top: 0px;
+        margin-bottom: 15px;
+    }
+    [data-testid="stSidebar"] {
+        background-color: #f3f6fa;
+        padding: 1.5rem 1rem 1rem 1rem;
+        border-right: 2px solid #e0e0e0;
+    }
+    [data-testid="stSidebar"] h2 {
+        color: #1565C0;
+        font-size: 18px;
+        font-weight: 500;
+        text-align: left;
+    }
+    div[data-testid="stSidebar"] > div { margin-bottom: 10px; }
+    .stSlider label, .stNumberInput label, .stTextInput label {
+        font-weight: 600;
+        color: #0d47a1;
+    }
+    .stDownloadButton button {
+        background: linear-gradient(90deg, #555555, #bbbbbb);
+        color: white;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        border: none;
+    }
+    .stDownloadButton button:hover {
+        background: linear-gradient(90deg, #1976d2, #00bcd4);
+    }
+    .molecule-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #283593;
+        text-align: left;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ===== 🌟 页面标题 =====
+    st.markdown("<h1>Demo of MolMark</h1>", unsafe_allow_html=True)
+
+    # ===== 🧭 Sidebar 参数 =====
+    st.sidebar.header("⚙️ Parameters Setting")
+
+    # --- 默认参数 ---
+    default_values = {
+        "num_molecules": 3,
+        "num_atoms": 20,
+        "sphere_radius": 0.3,
+        "stick_radius": 0.15,
+        "max_bits": 8,
+        "watermark_input": "10101010",
+    }
+
+    # --- 初始化 session_state ---
+    for key, value in default_values.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+    # --- 参数输入组件 ---
+    col_s1, col_s2 = st.sidebar.columns(2)
+
+    # Molecule 数量下拉
+    num_molecule_options = list(range(1, 65))  # 可选 1~64
+    st.session_state.num_molecules = col_s1.selectbox(
+        "Molecule",
+        options=num_molecule_options,
+        index=st.session_state.num_molecules - 1  # 默认选中当前值
+    )
+
+    # Atom 数量下拉
+    num_atom_options = list(range(10, 28))  # 可选 10~27
+    st.session_state.num_atoms = col_s2.selectbox(
+        "Atom",
+        options=num_atom_options,
+        index=st.session_state.num_atoms - 10  # 默认选中当前值
+    )
+
+    col_s3, col_s4 = st.sidebar.columns(2)
+
+    # Atom Radius 下拉
+    atom_radius_options = [round(0.1 + 0.05*i, 2) for i in range(19)]  # 0.1~1.0
+    st.session_state.sphere_radius = col_s3.selectbox(
+        "Atom Radius",
+        options=atom_radius_options,
+        index=atom_radius_options.index(st.session_state.sphere_radius)
+    )
+
+    # Bond Radius 下拉
+    bond_radius_options = [round(0.05 + 0.05*i, 2) for i in range(10)]  # 0.05~0.5
+    st.session_state.stick_radius = col_s4.selectbox(
+        "Bond Radius",
+        options=bond_radius_options,
+        index=bond_radius_options.index(st.session_state.stick_radius)
+    )
+
+    # Maximum bits 下拉
+    max_bits_options = [4, 6, 8, 10, 12, 14, 16]
+    st.session_state.max_bits = st.sidebar.selectbox(
+        "Maximum bits",
+        options=max_bits_options,
+        index=max_bits_options.index(st.session_state.max_bits)
+    )
+    st.session_state.watermark_input = st.sidebar.text_input(
+        "Watermark (Text or Binary)", st.session_state.watermark_input
+    )
+
+    # --- 🧹 参数重置按钮 ---
+    st.sidebar.markdown("---")
+    if st.sidebar.button("🔄 Reset Parameters"):
+        for key, value in default_values.items():
+            st.session_state[key] = value
+
+
+    # 返回参数
+    return (
+        st.session_state.num_molecules,
+        st.session_state.num_atoms,
+        st.session_state.sphere_radius,
+        st.session_state.stick_radius,
+        st.session_state.max_bits,
+        st.session_state.watermark_input,
+    )
+
+num_molecules, num_atoms, sphere_radius, stick_radius, max_bits, watermark_input = setup_app_style()
+
+
+
+# st.sidebar.header("Parameters Setting")
+# num_molecules = st.sidebar.slider("Molecule Numbers", 1, 64, 3, 1)
+# num_atoms = st.sidebar.slider("Atom Numbers", 10, 27, 20, 1)
+# sphere_radius = st.sidebar.slider("Atom Radius", 0.1, 1.0, 0.3, 0.05)
+# stick_radius = st.sidebar.slider("Bond Radius", 0.05, 0.5, 0.15, 0.05)
+# watermark_input = st.sidebar.text_input("Watermark (Text or Binary)","10101010")
+# max_bits = st.sidebar.slider("Maximum bits", 4, 16, 8, 2)
+
+
 
 bits_list = parse_bits_input(watermark_input, max_bits=max_bits)
 watermark_emb = len(bits_list)
@@ -358,7 +499,24 @@ config = {"config_file":r"./configs/bfn4molgen_test.yaml",
         "watermark_emb": watermark_emb, }
 config = Config(**config)
 
-col_embed, col_extract = st.sidebar.columns(2)
+
+st.header("Watermark Operations")
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("🧬 Generate New Molecule", use_container_width=True):
+        st.session_state["generate_molecule"] = True
+        st.session_state["load_molecule"] = False  # 保持互斥逻辑
+
+
+# 第二个按钮：加载已有分子
+with col2:
+    if st.button("📂 Load Existing Molecule", use_container_width=True):
+        st.session_state["load_molecule"] = True
+        st.session_state["generate_molecule"] = False
+
+
+col_embed, col_extract = st.columns(2)
 with col_embed:
     if st.button("🧩 Embed Watermark", use_container_width=True):
         st.session_state["embed_watermark"] = True
@@ -366,25 +524,12 @@ with col_embed:
 with col_extract:
     if st.button("🔍 Extract Watermark", use_container_width=True):
         st.session_state["extract_watermark"] = True
-
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("Generate New Molecule", use_container_width=True):
-        st.session_state["generate_molecule"] = True
-        st.session_state["load_molecule"] = False  # 保持互斥逻辑
-
-
-# 第二个按钮：加载已有分子
-with col2:
-    if st.button("Load Existing Molecule", use_container_width=True):
-        st.session_state["load_molecule"] = True
-        st.session_state["generate_molecule"] = False
   
+
 if "generate_molecule" in st.session_state and st.session_state["generate_molecule"]:
     # st.info("🧬 Step 1: Generating a new molecule...")
 
-    output = generate_molecule(mol_path, num_atoms, batch_size=config.optimization.batch_size)
+    output = generate_molecule(mol_path, num_atoms)
     st.session_state['ori_elements'], st.session_state['ori_coords'], st.session_state['ori_edge_index'] = output
 
     st.session_state["generate_pressed"] = True
@@ -400,7 +545,7 @@ if "load_molecule" in st.session_state and st.session_state["load_molecule"]:
     st.session_state["extract_watermark"] = False  # 重置状态
     if uploaded_file is not None:
         ori_data = pickle.load(uploaded_file)
-        output = parse_xyz_text(ori_data, batch_size=config.optimization.batch_size)
+        output = parse_xyz_text(ori_data)
         st.session_state['ori_elements'], st.session_state['ori_coords'], st.session_state['ori_edge_index'] = output
         st.session_state["load_pressed"] = True
         st.session_state["load_molecule"] = False  # 重置状态
