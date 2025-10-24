@@ -220,8 +220,7 @@ def embed_watermark_with_model(config, elements, coords, edge_index, bits_list):
     model_param_path = parameters_root[config.watermark_emb]
     with open(model_param_path, 'rb') as file:
         params = torch.load(file, map_location=torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
-        model.load_state_dict(params['state_dict'], strict=False)
-        # model.load_state_dict(params, strict=False)
+        model.load_state_dict(params, strict=False)
 
     # 嵌入水印
     wm_coords = model.embed_watermark(elements, coords, edge_index, bits_list_expand)
@@ -236,8 +235,7 @@ def extract_watermark_with_model(config, elements, coords, edge_index):
     model_param_path = parameters_root[config.watermark_emb]
     with open(model_param_path, 'rb') as file:
         params = torch.load(file, map_location=torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu"))
-        model.load_state_dict(params['state_dict'], strict=False)
-        # model.load_state_dict(params, strict=False)
+        model.load_state_dict(params, strict=False)
 
     # 提取水印
     extract_code = model.extract_watermark(elements, coords, edge_index)
