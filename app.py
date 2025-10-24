@@ -181,9 +181,8 @@ def parse_bits_input(user_input, max_bits=64):
     return bits[:max_bits]
 
 
-# -------------------------
+
 # RDKit 分子构建
-# -------------------------
 def build_mol(elements, coords):
     elements = charge_decode(elements)
     mol = Chem.RWMol()
@@ -325,21 +324,8 @@ def display_multiple_molecules(elements, coords, edge_index, element_colors, sph
                 viewer.animate({'loop': 'backAndForth'})
                 showmol(viewer, width=width, height=height)
 
-# 现有分子路径
-mol_path = r'./generated_molecules/gen_qm9_new.pkl'
-parameters_root ={ 
-    4:r'./all_checkpoints/epoch=1819-mol_stable=0.840278-atm_stable=0.984106-validity=0.904514-recovery=0.981771.ckpt',
-    6:r'./all_checkpoints/epoch=2839-mol_stable=0.876736-atm_stable=0.989281-validity=0.942708-recovery=0.958044.ckpt',  
-    8:r'./all_checkpoints/epoch=1279-mol_stable=0.843750-atm_stable=0.984041-validity=0.907812-recovery=0.958398.ckpt',
-    10:r'./all_checkpoints/epoch=2959-mol_stable=0.866319-atm_stable=0.987025-validity=0.927083-recovery=0.946701.ckpt',
-    12:r'./all_checkpoints/epoch=1379-mol_stable=0.732639-atm_stable=0.971181-validity=0.871528-recovery=0.948495.ckpt',
-    14:r'./all_checkpoints/epoch=2859-mol_stable=0.829861-atm_stable=0.982860-validity=0.923611-recovery=0.954117.ckpt',
-    16:r'./all_checkpoints/epoch=2559-mol_stable=0.853125-atm_stable=0.986066-validity=0.925000-recovery=0.944922.ckpt'
-    }
 
-# -------------------------
 # Streamlit 页面
-# -------------------------
 def setup_app_style():
     """全局页面样式与Sidebar布局设置（带参数重置功能）"""
 
@@ -406,7 +392,7 @@ def setup_app_style():
         "sphere_radius": 0.3,
         "stick_radius": 0.15,
         "max_bits": 8,
-        "watermark_input": "10101010",
+        "watermark_input": "1010101010101010",
     }
 
     # --- 初始化 session_state ---
@@ -479,19 +465,21 @@ def setup_app_style():
         st.session_state.watermark_input,
     )
 
+
+
+# 现有分子路径
+mol_path = r'./generated_molecules/gen_qm9_new.pkl'
+parameters_root ={ 
+    4:r'./all_checkpoints/epoch=1819-mol_stable=0.840278-atm_stable=0.984106-validity=0.904514-recovery=0.981771.ckpt',
+    6:r'./all_checkpoints/epoch=2839-mol_stable=0.876736-atm_stable=0.989281-validity=0.942708-recovery=0.958044.ckpt',  
+    8:r'./all_checkpoints/epoch=1279-mol_stable=0.843750-atm_stable=0.984041-validity=0.907812-recovery=0.958398.ckpt',
+    10:r'./all_checkpoints/epoch=2959-mol_stable=0.866319-atm_stable=0.987025-validity=0.927083-recovery=0.946701.ckpt',
+    12:r'./all_checkpoints/epoch=1379-mol_stable=0.732639-atm_stable=0.971181-validity=0.871528-recovery=0.948495.ckpt',
+    14:r'./all_checkpoints/epoch=2859-mol_stable=0.829861-atm_stable=0.982860-validity=0.923611-recovery=0.954117.ckpt',
+    16:r'./all_checkpoints/epoch=2559-mol_stable=0.853125-atm_stable=0.986066-validity=0.925000-recovery=0.944922.ckpt'
+    }
+
 num_molecules, num_atoms, sphere_radius, stick_radius, max_bits, watermark_input = setup_app_style()
-
-
-
-# st.sidebar.header("Parameters Setting")
-# num_molecules = st.sidebar.slider("Molecule Numbers", 1, 64, 3, 1)
-# num_atoms = st.sidebar.slider("Atom Numbers", 10, 27, 20, 1)
-# sphere_radius = st.sidebar.slider("Atom Radius", 0.1, 1.0, 0.3, 0.05)
-# stick_radius = st.sidebar.slider("Bond Radius", 0.05, 0.5, 0.15, 0.05)
-# watermark_input = st.sidebar.text_input("Watermark (Text or Binary)","10101010")
-# max_bits = st.sidebar.slider("Maximum bits", 4, 16, 8, 2)
-
-
 
 bits_list = parse_bits_input(watermark_input, max_bits=max_bits)
 watermark_emb = len(bits_list)
@@ -551,7 +539,6 @@ if "load_molecule" in st.session_state and st.session_state["load_molecule"]:
         st.session_state["load_molecule"] = False  # 重置状态
         
         
-
 if "generate_pressed" in st.session_state and st.session_state["generate_pressed"] or "load_pressed" in st.session_state and st.session_state["load_pressed"]:
 
     if "generate_pressed" in st.session_state and st.session_state['generate_pressed'] or "load_pressed" in st.session_state and st.session_state['load_pressed']:
