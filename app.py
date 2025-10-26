@@ -328,13 +328,13 @@ def display_multiple_molecules(elements, coords, edge_index, element_colors, sph
 # 现有分子路径
 mol_path = r'./generated_molecules/gen_qm9_new.pkl'
 parameters_root ={ 
-    4:r'./all_checkpoints/epoch=19-mol_stable=0.781250-atm_stable=0.971690-validity=0.944444-recovery=0.996962.ckpt',
-    6:r'./all_checkpoints/epoch=19-mol_stable=0.865234-atm_stable=0.985585-validity=0.957031-recovery=0.994141.ckpt',  
-    8:r'./all_checkpoints/epoch=19-mol_stable=0.644097-atm_stable=0.926154-validity=0.875000-recovery=0.999132.ckpt',
-    10:r'./all_checkpoints/epoch=19-mol_stable=0.845486-atm_stable=0.981175-validity=0.949653-recovery=0.945486.ckpt',
-    12:r'./all_checkpoints/epoch=19-mol_stable=0.907986-atm_stable=0.991429-validity=0.979167-recovery=0.982928.ckpt',
-    14:r'./all_checkpoints/epoch=19-mol_stable=0.909722-atm_stable=0.991443-validity=0.954861-recovery=0.984623.ckpt',
-    16:r'./all_checkpoints/epoch=19-mol_stable=0.602431-atm_stable=0.915827-validity=0.875000-recovery=0.971354.ckpt',
+    4:r'./all_checkpoints/epoch=299-mol_stable=0.928819-atm_stable=0.993652-validity=0.975694-recovery=0.996962.ckpt',
+    6:r'./all_checkpoints/epoch=379-mol_stable=0.937500-atm_stable=0.993320-validity=0.970703-recovery=0.999674.ckpt',  
+    8:r'./all_checkpoints/epoch=299-mol_stable=0.885417-atm_stable=0.988920-validity=0.930556-recovery=1.000000.ckpt',
+    10:r'./all_checkpoints/epoch=379-mol_stable=0.864583-atm_stable=0.984794-validity=0.961806-recovery=0.996528.ckpt',
+    12:r'./all_checkpoints/epoch=299-mol_stable=0.447917-atm_stable=0.875101-validity=0.718750-recovery=0.968027.ckpt',
+    14:r'./all_checkpoints/epoch=379-mol_stable=0.907986-atm_stable=0.990440-validity=0.963542-recovery=0.985863.ckpt',
+    16:r'./all_checkpoints/epoch=299-mol_stable=0.727431-atm_stable=0.966708-validity=0.888889-recovery=0.992730.ckpt',
     }
 
 # -------------------------
